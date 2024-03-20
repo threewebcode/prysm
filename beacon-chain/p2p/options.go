@@ -23,13 +23,16 @@ import (
 // MultiAddressBuilder takes in an ip address string and port to produce a go multiaddr format.
 func MultiAddressBuilder(ipAddr string, port uint) (ma.Multiaddr, error) {
 	parsedIP := net.ParseIP(ipAddr)
-	if parsedIP.To4() == nil && parsedIP.To16() == nil {
-		return nil, errors.Errorf("invalid ip address provided: %s", ipAddr)
-	}
+
 	if parsedIP.To4() != nil {
 		return ma.NewMultiaddr(fmt.Sprintf("/ip4/%s/tcp/%d", ipAddr, port))
 	}
-	return ma.NewMultiaddr(fmt.Sprintf("/ip6/%s/tcp/%d", ipAddr, port))
+
+	if parsedIP.To16() != nil {
+		return ma.NewMultiaddr(fmt.Sprintf("/ip6/%s/tcp/%d", ipAddr, port))
+	}
+
+	return nil, errors.Errorf("invalid ip address provided: %s", ipAddr)
 }
 
 // buildOptions for the libp2p host.
